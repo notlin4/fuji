@@ -4,6 +4,7 @@ package io.github.sakurawald.config.model;
 import com.mojang.authlib.properties.Property;
 import io.github.sakurawald.config.annotation.Comment;
 import io.github.sakurawald.module.initializer.command_alias.CommandAliasEntry;
+import io.github.sakurawald.module.initializer.command_rewrite.CommandRewriteEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class ConfigModel {
         public NewbieWelcome newbie_welcome = new NewbieWelcome();
         public TeleportWarmup teleport_warmup = new TeleportWarmup();
         public MOTD motd = new MOTD();
-        public BetterFakePlayer better_fake_player = new BetterFakePlayer();
+        public FakePlayerManager fake_player_manager = new FakePlayerManager();
         public BetterInfo better_info = new BetterInfo();
         public CommandCooldown command_cooldown = new CommandCooldown();
         public TopChunks top_chunks = new TopChunks();
@@ -50,9 +51,9 @@ public class ConfigModel {
         public MultiObsidianPlatform multi_obsidian_platform = new MultiObsidianPlatform();
         public OpProtect op_protect = new OpProtect();
         public Pvp pvp = new Pvp();
-        public StrongerPlayerList stronger_player_list = new StrongerPlayerList();
-        public WhitelistFix whitelist_fix = new WhitelistFix();
-        public ZeroCommandPermission zero_command_permission = new ZeroCommandPermission();
+        public FixPlayerListCME fix_player_list_cme = new FixPlayerListCME();
+        public FixWhitelist fix_whitelist = new FixWhitelist();
+        public CommandPermission command_permission = new CommandPermission();
         public Head head = new Head();
         public Profiler profiler = new Profiler();
         public CommandSpy command_spy = new CommandSpy();
@@ -60,8 +61,6 @@ public class ConfigModel {
         public BypassChatSpeed bypass_chat_speed = new BypassChatSpeed();
         public BypassMoveSpeed bypass_move_speed = new BypassMoveSpeed();
         public BypassMaxPlayerLimit bypass_max_player_limit = new BypassMaxPlayerLimit();
-        public BiomeLookupCache biome_lookup_cache = new BiomeLookupCache();
-        public TickChunkCache tick_chunk_cache = new TickChunkCache();
         public Config config = new Config();
         public Test test = new Test();
         public Hat hat = new Hat();
@@ -136,7 +135,7 @@ public class ConfigModel {
             public double interrupt_distance = 1d;
         }
 
-        public class BetterFakePlayer {
+        public class FakePlayerManager {
             public boolean enable = false;
             @Comment("How many fake-player can each player spawn? The tuple means (day_of_week, minutes_of_the_day, max_fake_player_per_player)." +
                     "The range of day_of_week is [1,7]. " +
@@ -370,16 +369,16 @@ public class ConfigModel {
             public boolean enable = false;
         }
 
-        public class StrongerPlayerList {
+        public class FixPlayerListCME {
             public boolean enable = false;
         }
 
-        public class WhitelistFix {
+        public class FixWhitelist {
 
             public boolean enable = false;
         }
 
-        public class ZeroCommandPermission {
+        public class CommandPermission {
             public boolean enable = false;
         }
 
@@ -398,14 +397,6 @@ public class ConfigModel {
         }
 
         public class Scheduler {
-            public boolean enable = false;
-        }
-
-        public class BiomeLookupCache {
-            public boolean enable = false;
-        }
-
-        public class TickChunkCache {
             public boolean enable = false;
         }
 
@@ -528,6 +519,15 @@ public class ConfigModel {
 
             public boolean enable = false;
 
+            @Comment("Should we override the power of proviers for the opened enchant table?")
+            public OverridePower override_power = new OverridePower();
+            public class OverridePower {
+
+                public boolean enable = true;
+                @Comment("How many power providers for the opened enchant table. For a max level of enchant table, it requires 15 power providers.")
+                public int power_provider_amount = 15;
+            }
+
         }
 
         public class Anvil {
@@ -572,10 +572,21 @@ public class ConfigModel {
             public List<CommandAliasEntry> alias = new ArrayList<>() {
                 {
                     this.add(new CommandAliasEntry(List.of("r"), List.of("reply")));
-                    this.add(new CommandAliasEntry(List.of("magic", "stick", "applied"), List.of("gamemode")));
                     this.add(new CommandAliasEntry(List.of("i", "want", "to","modify","chat"), List.of("chat","format")));
                 }
             };
         }
+
+        public CommandRewrite command_rewrite = new CommandRewrite();
+        public class CommandRewrite  {
+            public boolean enable = false;
+            public List<CommandRewriteEntry> rules = new ArrayList<>() {
+                {
+                    this.add(new CommandRewriteEntry("home", "home tp default"));
+                }
+            };
+
+        }
+
     }
 }
