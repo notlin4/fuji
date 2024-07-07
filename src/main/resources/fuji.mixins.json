@@ -16,6 +16,7 @@
     "chat.ServerGamePacketListenerImplMixin",
     "command_interactive.SignBlockMixin",
     "command_rewrite.ServerPlayNetworkHandlerMixin",
+    "enchantment.EnchantmentScreenHandlerMixin",
     "language.ServerPlayerMixin",
     "main_stats.BlockMixin",
     "motd.ServerStatusPacketListenerImplMixin",
