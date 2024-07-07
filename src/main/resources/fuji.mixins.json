@@ -19,7 +19,6 @@
     "language.ServerPlayerMixin",
     "main_stats.BlockMixin",
     "motd.ServerStatusPacketListenerImplMixin",
-    "multi_obsidian_platform.EndPortalBlockMixin",
     "pvp.PvpToggleMixin",
     "reply.MsgCommandMixin",
     "resource_world.EndGatewayBlockEntityMixin",
@@ -34,7 +33,8 @@
     "system_message.ComponentMixin",
     "teleport_warmup.ServerPlayerMixin",
     "top_chunks.ThreadedAnvilChunkStorageMixin",
-    "works.HopperBlockEntityMixin"
+    "works.HopperBlockEntityMixin",
+    "zero_command_permission.CommandNodeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
