@@ -135,13 +135,6 @@ modrinth {
     syncBodyFrom = rootProject.file("README.md").text
 }
 
-// replace readme
-tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
-tasks.register('replaceReadme') {
-    // todo
-}
-tasks.modrinthSyncBody.dependsOn(tasks.replaceReadme)
-
 
 test {
     useJUnitPlatform()
