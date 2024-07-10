@@ -36,7 +36,7 @@ public class ConfigModel {
         public NewbieWelcome newbie_welcome = new NewbieWelcome();
         public TeleportWarmup teleport_warmup = new TeleportWarmup();
         public MOTD motd = new MOTD();
-        public FakePlayerManager fake_player_manager = new FakePlayerManager();
+        public FakePlayerManager better_fake_player = new FakePlayerManager();
         public BetterInfo better_info = new BetterInfo();
         public CommandCooldown command_cooldown = new CommandCooldown();
         public TopChunks top_chunks = new TopChunks();
@@ -51,9 +51,9 @@ public class ConfigModel {
         public MultiObsidianPlatform multi_obsidian_platform = new MultiObsidianPlatform();
         public OpProtect op_protect = new OpProtect();
         public Pvp pvp = new Pvp();
-        public FixPlayerListCME fix_player_list_cme = new FixPlayerListCME();
-        public FixWhitelist fix_whitelist = new FixWhitelist();
-        public CommandPermission command_permission = new CommandPermission();
+        public FixPlayerListCME stronger_player_list = new FixPlayerListCME();
+        public FixWhitelist whitelist_fix = new FixWhitelist();
+        public CommandPermission zero_command_permission = new CommandPermission();
         public Head head = new Head();
         public Profiler profiler = new Profiler();
         public CommandSpy command_spy = new CommandSpy();

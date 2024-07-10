@@ -26,7 +26,7 @@ public abstract class PlayerCommandMixin {
 
     @Unique
     private static String transformFakePlayerName(String fakePlayerName) {
-        return Configs.configHandler.model().modules.fake_player_manager.transform_name.replace("%name%", fakePlayerName);
+        return Configs.configHandler.model().modules.better_fake_player.transform_name.replace("%name%", fakePlayerName);
     }
 
     @Redirect(method = "cantSpawn", at = @At(
@@ -56,7 +56,7 @@ public abstract class PlayerCommandMixin {
         }
 
         /* fix: fake-player auth network laggy */
-        if (Configs.configHandler.model().modules.fake_player_manager.use_local_random_skins_for_fake_player) {
+        if (Configs.configHandler.model().modules.better_fake_player.use_local_random_skins_for_fake_player) {
             String fakePlayerName = StringArgumentType.getString(context, "player");
             fakePlayerName = transformFakePlayerName(fakePlayerName);
             Fuji.SERVER.getUserCache().add(module.createOfflineGameProfile(fakePlayerName));
