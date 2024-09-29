@@ -10,8 +10,6 @@ jobs:
         ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     steps:
       - name: checkout repository
         uses: actions/checkout@v3
@@ -22,6 +20,26 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'microsoft'
+      - name: crowdin action
+        uses: crowdin/github-action@v2
+        with:
+            upload_sources: true
+            download_sources: false
+            push_sources: true
+
+            upload_translations: false
+            download_translations: true
+            push_translations: true
+
+            create_pull_request: true
+            localization_branch_name: crowdin-bot
+            pull_request_title: 'i18n: new translations from crowdin'
+            pull_request_body: 'i18n: new crowdin translations by [Crowdin GH Action](https://github.com/crowdin/github-action)'
+            pull_request_base_branch_name: 'dev'
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+            CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
       - name: make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew

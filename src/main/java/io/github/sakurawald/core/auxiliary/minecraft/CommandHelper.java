@@ -1,7 +1,10 @@
 package io.github.sakurawald.core.auxiliary.minecraft;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.RootCommandNode;
 import lombok.experimental.UtilityClass;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registry;
@@ -11,7 +14,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -19,6 +23,28 @@ import java.util.function.Function;
 public class CommandHelper {
 
     public static final String UUID = "uuid";
+
+    public static @NotNull String computeCommandNodePath(CommandNode<ServerCommandSource> node) {
+        CommandDispatcher<ServerCommandSource> dispatcher = ServerHelper.getCommandDispatcher();
+        String[] array = dispatcher.getPath(node).toArray(new String[]{});
+        return String.join(".", array);
+    }
+
+    public static List<CommandNode<ServerCommandSource>> getCommandNodes() {
+        List<CommandNode<ServerCommandSource>> ret = new ArrayList<>();
+        RootCommandNode<ServerCommandSource> root = ServerHelper.getCommandDispatcher().getRoot();
+        getCommandNodes(ret,root);
+        return ret;
+    }
+
+    private static void getCommandNodes(List<CommandNode<ServerCommandSource>> list, CommandNode<ServerCommandSource> parent) {
+        parent.getChildren().forEach(it->getCommandNodes(list, it));
+
+        // ignore the root command node
+        if (!parent.getName().isEmpty()) {
+            list.add(parent);
+        }
+    }
 
     @SuppressWarnings("unused")
     public static class Return {
@@ -31,27 +57,8 @@ public class CommandHelper {
         public static <T> @NotNull SuggestionProvider<ServerCommandSource> identifiers(RegistryKey<? extends Registry<T>> registryKey) {
             return (context, builder) -> {
                 Registry<T> registry = RegistryHelper.ofRegistry(registryKey);
-                Iterator<T> iterator = registry.iterator();
-                while (iterator.hasNext()) {
-                    T entry;
-
-                    /*
-                     * Steps to trigger the following exception:
-                     * 1. /world create 1 minecraft:overworld
-                     * 2. /world delete fuji:1
-                     * 3. /world tp
-                     *
-                     * Failed to handle packet net.minecraft.network.packet.c2s.play.RequestCommandCompletionsC2SPacket@72fe7802, suppressing error
-                     *  java.lang.NullPointerException: null
-                     */
-                    try {
-                        entry = iterator.next();
-                    } catch (NullPointerException e) {
-                        continue;
-                    }
-
-                    Identifier id = registry.getId(entry);
-                    builder.suggest(String.valueOf(id));
+                for (Identifier identifier : registry.getIds()) {
+                    builder.suggest(identifier.toString());
                 }
                 return builder.buildFuture();
             };

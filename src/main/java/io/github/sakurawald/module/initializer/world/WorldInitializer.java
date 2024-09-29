@@ -2,6 +2,7 @@ package io.github.sakurawald.module.initializer.world;
 
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sakurawald.Fuji;
+import io.github.sakurawald.core.annotation.Cite;
 import io.github.sakurawald.core.auxiliary.LogUtil;
 import io.github.sakurawald.core.auxiliary.minecraft.CommandHelper;
 import io.github.sakurawald.core.auxiliary.minecraft.LocaleHelper;
@@ -16,13 +17,12 @@ import io.github.sakurawald.core.command.exception.AbortOperationException;
 import io.github.sakurawald.core.config.handler.abst.BaseConfigurationHandler;
 import io.github.sakurawald.core.config.handler.impl.ObjectConfigurationHandler;
 import io.github.sakurawald.core.config.transformer.impl.MoveFileIntoModuleConfigDirectoryTransformer;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
 import io.github.sakurawald.module.initializer.world.config.model.WorldConfigModel;
 import io.github.sakurawald.module.initializer.world.config.model.WorldDataModel;
 import io.github.sakurawald.module.initializer.world.structure.DimensionEntry;
 import lombok.Getter;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -45,6 +45,7 @@ import java.util.Optional;
  * public static final RegistryKey<Registry<DimensionOptions>> DIMENSION = RegistryKeys.of("dimension");
  */
 
+@Cite("https://github.com/NucleoidMC/fantasy")
 @Getter
 @CommandRequirement(level = 4)
 public class WorldInitializer extends ModuleInitializer {
@@ -60,47 +61,56 @@ public class WorldInitializer extends ModuleInitializer {
     }
 
     public void loadWorlds(@NotNull MinecraftServer server) {
-        for (DimensionEntry dimensionEntry : storage.getModel().dimension_list) {
-            if (!dimensionEntry.isEnable()) continue;
+        storage.getModel().dimension_list.stream()
+            .filter(DimensionEntry::isEnable)
+            .forEach(it -> {
+                try {
+                    WorldManager.requestToCreateWorld(it);
+                    LogUtil.info("load dimension {} into server successfully.", it.getDimension());
+                } catch (Exception e) {
+                    LogUtil.error("failed to load dimension `{}`", it, e);
+                }
+            });
+    }
 
-            try {
-                Identifier dimensionType = Identifier.of(dimensionEntry.getDimension_type());
-                Identifier dimension = Identifier.of(dimensionEntry.getDimension());
-                long seed = dimensionEntry.getSeed();
-                WorldManager.requestToCreateWorld(server, dimension, dimensionType, seed);
-            } catch (Exception e) {
-                LogUtil.error("failed to load dimension `{}`", dimensionEntry, e);
-            }
+    private static void checkBlacklist(CommandContext<ServerCommandSource> ctx, String identifier) {
+        if (config.getModel().blacklist.dimension_list.contains(identifier)) {
+            LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.blacklist", identifier);
+            throw new AbortOperationException();
         }
     }
 
     @CommandNode("world tp")
     private static int $tp(@CommandSource ServerPlayerEntity player, Dimension dimension) {
         ServerWorld world = dimension.getValue();
-
         BlockPos spawnPos = world.getSpawnPos();
-
         player.teleport(world, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYaw(), player.getPitch());
         return CommandHelper.Return.SUCCESS;
     }
 
     @CommandNode("world create")
     private static int $create(@CommandSource CommandContext<ServerCommandSource> ctx, String name,
-                        Optional<Long> seed, DimensionType dimensionType) {
-        Identifier dimensionTypeIdentifier = Identifier.of(dimensionType.getValue());
+                               Optional<Long> seed, DimensionType dimensionType) {
+
+        /* make dimension identifier */
         String FUJI_DIMENSION_NAMESPACE = "fuji";
         Identifier dimensionIdentifier = Identifier.of(FUJI_DIMENSION_NAMESPACE, name);
 
-        if (RegistryHelper.ofRegistry(RegistryKeys.DIMENSION).containsId(dimensionIdentifier)) {
+        /* check exist */
+        if (ServerHelper.getWorlds().stream().anyMatch(it -> RegistryHelper.ofString(it).equals(dimensionIdentifier.toString()))) {
             LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.exist");
             return CommandHelper.Return.FAIL;
         }
 
+        /* make dimension entry */
         long $seed = seed.orElse(RandomSeed.getSeed());
-        WorldManager.requestToCreateWorld(ServerHelper.getDefaultServer(), dimensionIdentifier, dimensionTypeIdentifier, $seed);
-
-        storage.getModel().dimension_list.add(new DimensionEntry(true, dimensionIdentifier.toString(), dimensionTypeIdentifier.toString(), $seed));
+        Identifier dimensionTypeIdentifier = Identifier.of(dimensionType.getValue());
+        DimensionEntry dimensionEntry = new DimensionEntry(true, dimensionIdentifier.toString(), dimensionTypeIdentifier.toString(), $seed);
+        storage.getModel().dimension_list.add(dimensionEntry);
         storage.writeStorage();
+
+        /* request creation */
+        WorldManager.requestToCreateWorld(dimensionEntry);
 
         LocaleHelper.sendBroadcastByKey("world.dimension.created", dimensionIdentifier);
         return CommandHelper.Return.SUCCESS;
@@ -108,13 +118,15 @@ public class WorldInitializer extends ModuleInitializer {
 
     @CommandNode("world delete")
     private static int $delete(@CommandSource CommandContext<ServerCommandSource> ctx, Dimension dimension) {
+        /* check blacklist */
         ServerWorld world = dimension.getValue();
-
         String identifier = RegistryHelper.ofString(world);
         checkBlacklist(ctx, identifier);
 
+        /* request to deletion */
         WorldManager.requestToDeleteWorld(world);
 
+        /* write entry */
         Optional<DimensionEntry> first = storage.getModel().dimension_list.stream().filter(o -> o.getDimension().equals(identifier)).findFirst();
         if (first.isEmpty()) {
             LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.not_found", identifier);
@@ -127,13 +139,6 @@ public class WorldInitializer extends ModuleInitializer {
         return CommandHelper.Return.SUCCESS;
     }
 
-    private static void checkBlacklist(CommandContext<ServerCommandSource> ctx, String identifier) {
-        if (config.getModel().blacklist.dimension_list.contains(identifier)) {
-            LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.blacklist", identifier);
-            throw new AbortOperationException();
-        }
-    }
-
     @CommandNode("world reset")
     private static int $reset(@CommandSource CommandContext<ServerCommandSource> ctx, Optional<Boolean> useTheSameSeed, Dimension dimension) {
         // draw seed and save
@@ -141,22 +146,23 @@ public class WorldInitializer extends ModuleInitializer {
         String identifier = RegistryHelper.ofString(world);
         checkBlacklist(ctx, identifier);
 
-        Optional<DimensionEntry> first = storage.getModel().dimension_list.stream().filter(o -> o.getDimension().equals(identifier)).findFirst();
-        if (first.isEmpty()) {
+        Optional<DimensionEntry> dimensionEntryOpt = storage.getModel().dimension_list.stream().filter(o -> o.getDimension().equals(identifier)).findFirst();
+        if (dimensionEntryOpt.isEmpty()) {
             LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.not_found");
             return CommandHelper.Return.FAIL;
         }
-        // just delete it
+
+        // request the deletion
         WorldManager.requestToDeleteWorld(world);
 
+        // set the new seed
         Boolean $useTheSameSeed = useTheSameSeed.orElse(false);
-
-        long newSeed = $useTheSameSeed ? first.get().getSeed() : RandomSeed.getSeed();
-        WorldManager.requestToCreateWorld(ServerHelper.getDefaultServer(), Identifier.of(identifier), Identifier.of(first.get().getDimension_type()), newSeed);
-
-        // save the new seed
-        first.get().setSeed(newSeed);
+        long newSeed = $useTheSameSeed ? dimensionEntryOpt.get().getSeed() : RandomSeed.getSeed();
+        dimensionEntryOpt.get().setSeed(newSeed);
         storage.writeStorage();
+
+        // request the creation
+        WorldManager.requestToCreateWorld(dimensionEntryOpt.get());
 
         LocaleHelper.sendBroadcastByKey("world.dimension.reset", identifier);
         return CommandHelper.Return.SUCCESS;

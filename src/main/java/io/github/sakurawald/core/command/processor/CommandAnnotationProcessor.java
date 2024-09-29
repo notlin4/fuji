@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import io.github.sakurawald.core.annotation.Cite;
 import io.github.sakurawald.core.auxiliary.LogUtil;
 import io.github.sakurawald.core.auxiliary.ReflectionUtil;
 import io.github.sakurawald.core.auxiliary.minecraft.CommandHelper;
@@ -16,10 +17,10 @@ import io.github.sakurawald.core.command.annotation.CommandSource;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
 import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.core.command.exception.AbortOperationException;
+import io.github.sakurawald.core.event.impl.CommandEvents;
 import io.github.sakurawald.core.manager.Managers;
 import io.github.sakurawald.core.manager.impl.module.ModuleManager;
 import lombok.Getter;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -44,6 +45,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Cite({
+    "https://github.com/Revxrsal/Lamp"
+    , "https://github.com/henkelmax/admiral"
+})
 public class CommandAnnotationProcessor {
 
     private static final String REQUIRED_ARGUMENT_PLACEHOLDER = "$";
@@ -54,7 +59,7 @@ public class CommandAnnotationProcessor {
     private static CommandRegistryAccess registryAccess;
 
     public static void process() {
-        CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
+        CommandEvents.REGISTRATION.register(((dispatcher, registryAccess, environment) -> {
             /* environment */
             CommandAnnotationProcessor.dispatcher = dispatcher;
             CommandAnnotationProcessor.registryAccess = registryAccess;
@@ -360,6 +365,7 @@ public class CommandAnnotationProcessor {
 
 
         // set requirement (method)
+        // get last literal argument builder, so that a normal player can use `/warp tp`, but can use `/warp set`
         setRequirement(getLastLiteralArgumentBuilder(builders), method.getAnnotation(CommandRequirement.class));
 
         return builders;

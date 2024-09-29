@@ -1,4 +1,4 @@
-package io.github.sakurawald.module.initializer.chat;
+package io.github.sakurawald.module.initializer.chat.style;
 
 import eu.pb4.placeholders.api.PlaceholderResult;
 import eu.pb4.placeholders.api.Placeholders;
@@ -16,10 +16,14 @@ import io.github.sakurawald.core.config.transformer.impl.MoveFileIntoModuleConfi
 import io.github.sakurawald.core.job.impl.MentionPlayersJob;
 import io.github.sakurawald.core.structure.RegexRewriteEntry;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
-import io.github.sakurawald.module.initializer.chat.config.model.ChatConfigModel;
-import io.github.sakurawald.module.initializer.chat.config.model.ChatFormatModel;
+import io.github.sakurawald.module.initializer.chat.style.model.ChatFormatModel;
+import io.github.sakurawald.module.initializer.chat.style.model.ChatStyleConfigModel;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
+import net.minecraft.text.Decoration;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -34,14 +38,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class ChatInitializer extends ModuleInitializer {
+public class ChatStyleInitializer extends ModuleInitializer {
 
     private static final BaseConfigurationHandler<ChatFormatModel> chatFormatHandler = new ObjectConfigurationHandler<>("chat.json", ChatFormatModel.class)
-        .addTransformer(new MoveFileIntoModuleConfigDirectoryTransformer(Fuji.CONFIG_PATH.resolve("chat.json"), ChatInitializer.class));
+        .addTransformer(new MoveFileIntoModuleConfigDirectoryTransformer(Fuji.CONFIG_PATH.resolve("chat.json"), ChatStyleInitializer.class));
 
-    public static final BaseConfigurationHandler<ChatConfigModel> config = new ObjectConfigurationHandler<>(BaseConfigurationHandler.CONFIG_JSON, ChatConfigModel.class);
+    public static final BaseConfigurationHandler<ChatStyleConfigModel> config = new ObjectConfigurationHandler<>(BaseConfigurationHandler.CONFIG_JSON, ChatStyleConfigModel.class);
 
     private static Map<Pattern, String> patterns;
+
+    public static final RegistryKey<MessageType> MESSAGE_TYPE_KEY = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, Identifier.ofVanilla("fuji_chat"));
+
+    public static final MessageType MESSAGE_TYPE_VALUE = new MessageType(
+        new Decoration("%s", List.of(Decoration.Parameter.CONTENT), Style.EMPTY),
+        new Decoration("%s", List.of(Decoration.Parameter.CONTENT), Style.EMPTY));
 
     @Override
     public void onInitialize() {

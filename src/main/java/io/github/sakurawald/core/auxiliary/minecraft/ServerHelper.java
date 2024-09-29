@@ -1,13 +1,17 @@
 package io.github.sakurawald.core.auxiliary.minecraft;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import lombok.Setter;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.UserCache;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +24,12 @@ public class ServerHelper {
         return server;
     }
 
-    public static List<ServerPlayerEntity> getPlayers() {
-        return getDefaultServer().getPlayerManager().getPlayerList();
+    public static Collection<ServerWorld> getWorlds() {
+        return getDefaultServer().worlds.values();
+    }
+
+    public static CommandDispatcher<ServerCommandSource> getCommandDispatcher() {
+        return getDefaultServer().getCommandManager().getDispatcher();
     }
 
     public static Optional<GameProfile> getGameProfileByName(String playerName) {
@@ -33,6 +41,10 @@ public class ServerHelper {
 
     public static PlayerManager getPlayerManager() {
         return getDefaultServer().getPlayerManager();
+    }
+
+    public static List<ServerPlayerEntity> getPlayers() {
+        return getDefaultServer().getPlayerManager().getPlayerList();
     }
 
     public static boolean isPlayerOnline(String name) {

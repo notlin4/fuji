@@ -8,11 +8,11 @@ import io.github.sakurawald.core.command.annotation.CommandNode;
 import io.github.sakurawald.core.command.annotation.CommandRequirement;
 import io.github.sakurawald.core.config.handler.abst.BaseConfigurationHandler;
 import io.github.sakurawald.core.config.handler.impl.ObjectConfigurationHandler;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.core.structure.TypeFormatter;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
 import io.github.sakurawald.module.initializer.cleaner.config.model.CleanerConfigModel;
 import io.github.sakurawald.module.initializer.cleaner.job.CleanerJob;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -30,7 +30,6 @@ import net.minecraft.util.Formatting;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
 
 @CommandNode("cleaner")
 @CommandRequirement(level = 4)
@@ -112,7 +111,7 @@ public class CleanerInitializer extends ModuleInitializer {
                 .formatted(Formatting.GOLD)
                 .append(TypeFormatter.formatTypes(null, counter));
 
-        for (ServerPlayerEntity player : ServerHelper.getDefaultServer().getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity player : ServerHelper.getPlayers()) {
             MutableText text = Text.empty()
                 .append(LocaleHelper.getTextByKey(player, "cleaner.broadcast", counter.values().stream().mapToInt(Integer::intValue).sum()))
                 .fillStyle(

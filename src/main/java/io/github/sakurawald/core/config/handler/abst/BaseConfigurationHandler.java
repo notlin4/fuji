@@ -15,9 +15,9 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import io.github.sakurawald.core.auxiliary.LogUtil;
 import io.github.sakurawald.core.config.job.SaveConfigurationHandlerJob;
 import io.github.sakurawald.core.config.transformer.abst.ConfigurationTransformer;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import lombok.Cleanup;
 import lombok.Getter;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.jetbrains.annotations.NotNull;
 import org.quartz.JobDataMap;
 

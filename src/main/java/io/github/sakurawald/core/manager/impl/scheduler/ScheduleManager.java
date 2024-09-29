@@ -3,10 +3,10 @@ package io.github.sakurawald.core.manager.impl.scheduler;
 
 import io.github.sakurawald.core.auxiliary.LogUtil;
 import io.github.sakurawald.core.config.Configs;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.core.manager.Managers;
 import io.github.sakurawald.core.manager.abst.BaseManager;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;

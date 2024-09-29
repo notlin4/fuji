@@ -6,10 +6,11 @@ import io.github.sakurawald.Fuji;
 import io.github.sakurawald.core.auxiliary.DateUtil;
 import io.github.sakurawald.core.auxiliary.RandomUtil;
 import io.github.sakurawald.core.auxiliary.minecraft.PermissionHelper;
+import io.github.sakurawald.core.auxiliary.minecraft.ServerHelper;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
 import io.github.sakurawald.module.initializer.placeholder.job.UpdateSumUpPlaceholderJob;
 import io.github.sakurawald.module.initializer.placeholder.structure.SumUpPlaceholder;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -126,7 +127,7 @@ public class PlaceholderInitializer extends ModuleInitializer {
 
     private void registerRandomPlayerPlaceholder() {
         Placeholders.register(Identifier.of(Fuji.MOD_ID, "random_player"), (ctx, args) -> {
-            List<ServerPlayerEntity> playerList = ctx.server().getPlayerManager().getPlayerList();
+            List<ServerPlayerEntity> playerList = ServerHelper.getPlayers();
             ServerPlayerEntity serverPlayerEntity = RandomUtil.drawList(playerList);
             return PlaceholderResult.value(Text.literal(serverPlayerEntity.getGameProfile().getName()));
         });

@@ -2,9 +2,9 @@ io.github.sakurawald.module.initializer.afk.AfkInitializer
 io.github.sakurawald.module.initializer.afk.effect.AfkEffectInitializer
 io.github.sakurawald.module.initializer.anti_build.AntiBuildInitializer
 io.github.sakurawald.module.initializer.back.BackInitializer
-io.github.sakurawald.module.initializer.chat.ChatInitializer
 io.github.sakurawald.module.initializer.chat.display.ChatDisplayInitializer
 io.github.sakurawald.module.initializer.chat.history.ChatHistoryInitializer
+io.github.sakurawald.module.initializer.chat.style.ChatStyleInitializer
 io.github.sakurawald.module.initializer.cleaner.CleanerInitializer
 io.github.sakurawald.module.initializer.command_alias.CommandAliasInitializer
 io.github.sakurawald.module.initializer.command_attachment.CommandAttachmentInitializer
@@ -20,12 +20,15 @@ io.github.sakurawald.module.initializer.command_meta.shell.ShellInitializer
 io.github.sakurawald.module.initializer.command_permission.CommandPermissionInitializer
 io.github.sakurawald.module.initializer.command_rewrite.CommandRewriteInitializer
 io.github.sakurawald.module.initializer.command_scheduler.CommandSchedulerInitializer
+io.github.sakurawald.module.initializer.command_spy.CommandSpyInitializer
 io.github.sakurawald.module.initializer.command_toolbox.bed.BedInitializer
 io.github.sakurawald.module.initializer.command_toolbox.burn.BurnInitializer
 io.github.sakurawald.module.initializer.command_toolbox.compass.CompassInitializer
 io.github.sakurawald.module.initializer.command_toolbox.extinguish.ExtinguishInitializer
 io.github.sakurawald.module.initializer.command_toolbox.feed.FeedInitializer
 io.github.sakurawald.module.initializer.command_toolbox.fly.FlyInitializer
+io.github.sakurawald.module.initializer.command_toolbox.freeze.FreezeInitializer
+io.github.sakurawald.module.initializer.command_toolbox.glow.GlowInitializer
 io.github.sakurawald.module.initializer.command_toolbox.god.GodInitializer
 io.github.sakurawald.module.initializer.command_toolbox.hat.HatInitializer
 io.github.sakurawald.module.initializer.command_toolbox.heal.HealInitializer

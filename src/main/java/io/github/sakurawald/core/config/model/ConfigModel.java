@@ -26,7 +26,7 @@ public class ConfigModel {
             public int max_slots = 15;
             public List<String> skip = new ArrayList<>() {
                 {
-                    this.add("head");
+                    this.add("modules/head");
                 }
             };
         }
@@ -124,14 +124,19 @@ public class ConfigModel {
         }
 
         public static class Chat {
+
             public boolean enable = false;
 
+            public Style style = new Style();
             public Display display = new Display();
             public History history = new History();
 
+            public static class Style {
+                public boolean enable = true;
+            }
+
             public static class History {
                 public boolean enable = true;
-
             }
 
             public static class Display {
@@ -487,6 +492,16 @@ public class ConfigModel {
             public Near near = new Near();
             public Jump jump = new Jump();
             public Compass compass = new Compass();
+            public Glow glow = new Glow();
+            public Freeze freeze = new Freeze();
+
+            public static class Glow {
+                public boolean enable = false;
+            }
+
+            public static class Freeze {
+                public boolean enable = false;
+            }
 
             public static class Bed {
                 public boolean enable = false;

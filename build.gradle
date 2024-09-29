@@ -54,7 +54,6 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings_version}"
     modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     compileOnly "org.projectlombok:lombok:${project.lombok_version}"
     annotationProcessor "org.projectlombok:lombok:${project.lombok_version}"
@@ -209,9 +208,15 @@ tasks.register('copyTranslationFiles', Copy) {
 
     def langDir = file("$projectDir/src/main/resources/io/github/sakurawald/lang")
     def translationDir = file("$projectDir/crowdin")
+    def sourceLanguageFile = "en_US.json"
 
     // clean
     doFirst {
+        delete("${translationDir}/${sourceLanguageFile}")
+        copy {
+            from("${langDir}/${sourceLanguageFile}")
+            into("${translationDir}")
+        }
         recreateDir(langDir)
     }
 
@@ -219,7 +224,6 @@ tasks.register('copyTranslationFiles', Copy) {
     from(translationDir)
     into("${langDir}")
     include "**/*.json"
-
 }
 tasks.processResources.dependsOn(copyTranslationFiles)
 
