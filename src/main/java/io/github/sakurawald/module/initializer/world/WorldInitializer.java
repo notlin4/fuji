@@ -13,7 +13,7 @@ import io.github.sakurawald.core.command.annotation.CommandRequirement;
 import io.github.sakurawald.core.command.annotation.CommandSource;
 import io.github.sakurawald.core.command.argument.wrapper.impl.Dimension;
 import io.github.sakurawald.core.command.argument.wrapper.impl.DimensionType;
-import io.github.sakurawald.core.command.exception.AbortOperationException;
+import io.github.sakurawald.core.command.exception.AbortCommandExecutionException;
 import io.github.sakurawald.core.config.handler.abst.BaseConfigurationHandler;
 import io.github.sakurawald.core.config.handler.impl.ObjectConfigurationHandler;
 import io.github.sakurawald.core.config.transformer.impl.MoveFileIntoModuleConfigDirectoryTransformer;
@@ -76,7 +76,7 @@ public class WorldInitializer extends ModuleInitializer {
     private static void checkBlacklist(CommandContext<ServerCommandSource> ctx, String identifier) {
         if (config.getModel().blacklist.dimension_list.contains(identifier)) {
             LocaleHelper.sendMessageByKey(ctx.getSource(), "world.dimension.blacklist", identifier);
-            throw new AbortOperationException();
+            throw new AbortCommandExecutionException();
         }
     }
 
@@ -85,6 +85,16 @@ public class WorldInitializer extends ModuleInitializer {
         ServerWorld world = dimension.getValue();
         BlockPos spawnPos = world.getSpawnPos();
         player.teleport(world, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), player.getYaw(), player.getPitch());
+        return CommandHelper.Return.SUCCESS;
+    }
+
+    @CommandNode("world list")
+    private static int $list(@CommandSource ServerPlayerEntity player) {
+        ServerHelper.getWorlds().forEach(world -> {
+            String dimensionType = world.getDimensionEntry().getIdAsString();
+            String dimension = String.valueOf(world.getRegistryKey().getValue());
+            LocaleHelper.sendMessageByKey(player, "world.dimension.list.entry", dimension, dimensionType);
+        });
         return CommandHelper.Return.SUCCESS;
     }
 

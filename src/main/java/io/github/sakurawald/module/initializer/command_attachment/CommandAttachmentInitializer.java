@@ -12,7 +12,7 @@ import io.github.sakurawald.core.command.annotation.CommandNode;
 import io.github.sakurawald.core.command.annotation.CommandRequirement;
 import io.github.sakurawald.core.command.annotation.CommandSource;
 import io.github.sakurawald.core.command.argument.wrapper.impl.GreedyString;
-import io.github.sakurawald.core.command.exception.AbortOperationException;
+import io.github.sakurawald.core.command.exception.AbortCommandExecutionException;
 import io.github.sakurawald.core.config.handler.abst.BaseConfigurationHandler;
 import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.core.manager.Managers;
@@ -56,7 +56,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
     private static void testSteppingBlockForPlayer(ServerPlayerEntity player) {
         String playerName = player.getGameProfile().getName();
         String originalUuid = player2uuid.get(playerName);
-        String uuid = NbtHelper.getUuid(player.getServerWorld(), player.getSteppingPos());
+        String uuid = NbtHelper.computeUuid(player.getServerWorld(), player.getSteppingPos());
 
         if (uuid.equals(originalUuid)) return;
         // update value
@@ -209,7 +209,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
         , GreedyString command
     ) {
         // get entity id
-        String uuid = NbtHelper.getUuid(player.getServerWorld(), blockPos);
+        String uuid = NbtHelper.computeUuid(player.getServerWorld(), blockPos);
         CommandAttachmentModel model = getAttachmentModel(uuid);
 
         // new entry
@@ -231,7 +231,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
     private static void checkItemStackInHand(ServerPlayerEntity player, ItemStack mainHandStack) {
         if (mainHandStack.isEmpty()) {
             LocaleHelper.sendMessageByKey(player, "item.empty.not_allow");
-            throw new AbortOperationException();
+            throw new AbortCommandExecutionException();
         }
     }
 
@@ -255,7 +255,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
 
     @CommandNode("detach-block-all")
     private static int detachBlockAll(@CommandSource ServerPlayerEntity player, BlockPos blockPos) {
-        String uuid = NbtHelper.getUuid(player.getServerWorld(), blockPos);
+        String uuid = NbtHelper.computeUuid(player.getServerWorld(), blockPos);
 
         doDetachAttachment(player, uuid);
         return CommandHelper.Return.SUCCESS;
@@ -270,7 +270,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
     private static int queryItem(@CommandSource ServerPlayerEntity player) {
         ItemStack mainHandStack = player.getMainHandStack();
         checkItemStackInHand(player, mainHandStack);
-        String uuid = NbtHelper.getUuid(mainHandStack.get(DataComponentTypes.CUSTOM_DATA));
+        String uuid = NbtHelper.computeUuid(mainHandStack.get(DataComponentTypes.CUSTOM_DATA));
 
         doQueryAttachment(player, uuid);
         return CommandHelper.Return.SUCCESS;
@@ -285,7 +285,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
 
     @CommandNode("query-block")
     private static int queryBlock(@CommandSource ServerPlayerEntity player, BlockPos blockPos) {
-        String uuid = NbtHelper.getUuid(player.getServerWorld(), blockPos);
+        String uuid = NbtHelper.computeUuid(player.getServerWorld(), blockPos);
         doQueryAttachment(player, uuid);
         return CommandHelper.Return.SUCCESS;
     }
@@ -294,7 +294,7 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
     private static void doQueryAttachment(ServerPlayerEntity player, String uuid) {
         if (!Managers.getAttachmentManager().existsAttachmentFile(COMMAND_ATTACHMENT_SUBJECT_NAME, uuid)) {
             LocaleHelper.sendMessageByKey(player, "command_attachment.query.no_attachment");
-            throw new AbortOperationException();
+            throw new AbortCommandExecutionException();
         }
 
         String attachment = Managers.getAttachmentManager().getAttachment(COMMAND_ATTACHMENT_SUBJECT_NAME, uuid);

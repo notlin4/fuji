@@ -1,13 +1,16 @@
 package io.github.sakurawald.module.initializer.command_permission;
 
+import io.github.sakurawald.core.annotation.Cite;
 import io.github.sakurawald.core.auxiliary.minecraft.CommandHelper;
 import io.github.sakurawald.core.auxiliary.minecraft.PermissionHelper;
+import io.github.sakurawald.core.auxiliary.minecraft.ServerHelper;
 import io.github.sakurawald.core.command.annotation.CommandNode;
 import io.github.sakurawald.core.command.annotation.CommandRequirement;
 import io.github.sakurawald.core.command.annotation.CommandSource;
+import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
 import io.github.sakurawald.module.initializer.command_permission.gui.CommandPermissionGui;
-import io.github.sakurawald.module.initializer.command_permission.structure.CommandNodeEntry;
+import io.github.sakurawald.module.initializer.command_permission.structure.CommandNodePermissionEntry;
 import io.github.sakurawald.module.initializer.command_permission.structure.WrappedPredicate;
 import net.luckperms.api.util.Tristate;
 import net.minecraft.server.command.ServerCommandSource;
@@ -19,15 +22,25 @@ import java.util.List;
 import java.util.function.Predicate;
 
 
+@Cite("https://github.com/DrexHD/VanillaPermissions")
 @CommandNode("command-permission")
 @CommandRequirement(level = 4)
 public class CommandPermissionInitializer extends ModuleInitializer {
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Override
+    public void onInitialize() {
+        ServerLifecycleEvents.SERVER_STARTED.register(server-> {
+            // ensure the getRequirement() is triggered.
+            CommandHelper.getCommandNodes().forEach(com.mojang.brigadier.tree.CommandNode::getRequirement);
+        });
+    }
+
     @CommandNode
     public static int gui(@CommandSource ServerPlayerEntity player) {
-        List<CommandNodeEntry> entities = CommandHelper.getCommandNodes().stream()
-            .map(CommandNodeEntry::new)
-            .sorted(Comparator.comparing(CommandNodeEntry::getPath))
+        List<CommandNodePermissionEntry> entities = CommandHelper.getCommandNodes().stream()
+            .map(CommandNodePermissionEntry::new)
+            .sorted(Comparator.comparing(CommandNodePermissionEntry::getPath))
             .toList();
         new CommandPermissionGui(player, entities, 0).open();
         return CommandHelper.Return.SUCCESS;
