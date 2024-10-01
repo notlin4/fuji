@@ -49,8 +49,10 @@ public class CommandBundleInitializer extends ModuleInitializer {
 
     @CommandNode("register")
     private static int register() {
-        registerCommandBundles();
-        CommandHelper.updateCommandTree();
+        if (registeredBundleCommands.isEmpty()) {
+            registerCommandBundles();
+            CommandHelper.updateCommandTree();
+        }
         return CommandHelper.Return.SUCCESS;
     }
 
@@ -60,10 +62,12 @@ public class CommandBundleInitializer extends ModuleInitializer {
         registeredBundleCommands.forEach(it -> {
             LiteralCommandNode<ServerCommandSource> navigationNode = it.build();
             com.mojang.brigadier.tree.CommandNode<ServerCommandSource> targetNode = root.getChild(navigationNode.getName());
-
-            if (unregister(targetNode, navigationNode)) {
-                root.getChildren().removeIf(p -> p.getName().equals(navigationNode.getName()));
+            if (targetNode != null) {
+                if (unregister(targetNode, navigationNode)) {
+                    root.getChildren().removeIf(p -> p.getName().equals(navigationNode.getName()));
+                }
             }
+
         });
         registeredBundleCommands.clear();
 
