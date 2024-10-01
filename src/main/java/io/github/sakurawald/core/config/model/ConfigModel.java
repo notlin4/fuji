@@ -37,6 +37,7 @@ public class ConfigModel {
 
         public static class Debug {
             public boolean disable_all_modules = false;
+            public boolean log_debug_messages = false;
         }
     }
 
@@ -67,6 +68,7 @@ public class ConfigModel {
         public CommandPermission command_permission = new CommandPermission();
         public CommandRewrite command_rewrite = new CommandRewrite();
         public CommandAlias command_alias = new CommandAlias();
+        public CommandBundle command_bundle = new CommandBundle();
         public CommandAttachment command_attachment = new CommandAttachment();
         public CommandInteractive command_interactive = new CommandInteractive();
         public CommandWarmup command_warmup = new CommandWarmup();
@@ -308,6 +310,10 @@ public class ConfigModel {
         }
 
         public static class CommandAlias {
+            public boolean enable = false;
+        }
+
+        public static class CommandBundle {
             public boolean enable = false;
         }
 

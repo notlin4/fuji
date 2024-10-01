@@ -6,22 +6,16 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sakurawald.core.auxiliary.minecraft.ServerHelper;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
+import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.core.command.argument.wrapper.impl.OfflinePlayerName;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.UserCache;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OfflinePlayerArgumentTypeAdapter extends BaseArgumentTypeAdapter {
-
-    @Override
-    public boolean match(Type type) {
-        return OfflinePlayerName.class.equals(type);
-    }
 
     @Override
     public ArgumentType<?> makeArgumentType() {
@@ -38,15 +32,25 @@ public class OfflinePlayerArgumentTypeAdapter extends BaseArgumentTypeAdapter {
     }
 
     @Override
-    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(Parameter parameter) {
-        return super.makeRequiredArgumentBuilder(parameter).suggests((context, builder) -> {
+    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(String argumentName) {
+        return super.makeRequiredArgumentBuilder(argumentName).suggests((context, builder) -> {
             getPlayerNameListFromUserCache().forEach(builder::suggest);
             return builder.buildFuture();
         });
     }
 
     @Override
-    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Parameter parameter) {
-        return new OfflinePlayerName(StringArgumentType.getString(context, parameter.getName()));
+    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Argument argument) {
+        return new OfflinePlayerName(StringArgumentType.getString(context, argument.getArgumentName()));
+    }
+
+    @Override
+    public List<Class<?>> getTypeClasses() {
+        return List.of(OfflinePlayerName.class);
+    }
+
+    @Override
+    public List<String> getTypeStrings() {
+        return List.of("offline-player");
     }
 }

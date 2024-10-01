@@ -5,17 +5,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
+import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.module.initializer.command_attachment.command.argument.wrapper.ExecuteAsType;
 import net.minecraft.server.command.ServerCommandSource;
 
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.util.List;
 
 public class ExecuteAsTypeArgumentTypeAdapter extends BaseArgumentTypeAdapter {
-    @Override
-    public boolean match(Type type) {
-        return ExecuteAsType.class.equals(type);
-    }
 
     @Override
     protected ArgumentType<?> makeArgumentType() {
@@ -23,13 +19,23 @@ public class ExecuteAsTypeArgumentTypeAdapter extends BaseArgumentTypeAdapter {
     }
 
     @Override
-    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Parameter parameter) {
-        return ExecuteAsType.valueOf(StringArgumentType.getString(context,parameter.getName()));
+    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Argument argument) {
+        return ExecuteAsType.valueOf(StringArgumentType.getString(context, argument.getArgumentName()));
     }
 
     @Override
-    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(Parameter parameter) {
-        return super.makeRequiredArgumentBuilder(parameter).suggests((ctx, builder) -> {
+    public List<Class<?>> getTypeClasses() {
+        return List.of(ExecuteAsType.class);
+    }
+
+    @Override
+    public List<String> getTypeStrings() {
+        return List.of("execute-as-type");
+    }
+
+    @Override
+    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(String argumentName) {
+        return super.makeRequiredArgumentBuilder(argumentName).suggests((ctx, builder) -> {
             for (ExecuteAsType value : ExecuteAsType.values()) {
                 builder.suggest(value.name());
             }

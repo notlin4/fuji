@@ -1,25 +1,31 @@
 package io.github.sakurawald.core.command.argument.structure;
 
-import io.github.sakurawald.core.command.annotation.CommandRequirement;
+import io.github.sakurawald.core.command.structure.CommandRequirementDescriptor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 1. Treat RequiredArgument the same as the LiteralArgument, except the GreedyStringArgument.
- * 2. The GreedyStringArgument should always be the last argument.
+ * Rules:
+ * - There are 2 kinds of Argument: LiteralArgument and RequiredArgument.
+ * - The treatment of RequiredArgument is the same as the LiteralArgument, except the GreedyStringArgument.
+ * - The GreedyStringArgument should always be the last parameter written in the method.
+ * - An optional argument is a RequiredArgument.
  */
 @Getter
 public class Argument {
     private static final String REQUIRED_ARGUMENT_PLACEHOLDER = "$";
     private static final int THE_METHOD_PARAMETER_INDEX_FOR_LITERAL_ARGUMENT = -1;
 
+    final Class<?> type;
     final String argumentName;
     final boolean isOptional;
-    final CommandRequirement requirement;
+    final CommandRequirementDescriptor requirement;
     int methodParameterIndex;
+    boolean isCommandSource;
 
-    private Argument(String argumentName, int methodParameterIndex, boolean isOptional, CommandRequirement requirement) {
+    private Argument(@Nullable Class<?> type, @NotNull String argumentName, int methodParameterIndex, boolean isOptional, @Nullable CommandRequirementDescriptor requirement) {
+        this.type = type;
         this.argumentName = argumentName;
         this.methodParameterIndex = methodParameterIndex;
         this.isOptional = isOptional;
@@ -29,12 +35,12 @@ public class Argument {
         this.methodParameterIndex = this.tryParseMethodParameterIndexFromArgumentName();
     }
 
-    public static Argument makeRequiredArgument(@NotNull String argumentName, int methodParameterIndex, boolean isOptional, @Nullable CommandRequirement requirement) {
-        return new Argument(argumentName, methodParameterIndex, isOptional, requirement);
+    public static Argument makeRequiredArgument(@Nullable Class<?> type, @NotNull String argumentName, int methodParameterIndex, boolean isOptional, @Nullable CommandRequirementDescriptor requirement) {
+        return new Argument(type, argumentName, methodParameterIndex, isOptional, requirement);
     }
 
-    public static Argument makeLiteralArgument(@NotNull String argumentName, @Nullable CommandRequirement requirement) {
-        return new Argument(argumentName, THE_METHOD_PARAMETER_INDEX_FOR_LITERAL_ARGUMENT, false, requirement);
+    public static Argument makeLiteralArgument(@NotNull String argumentName, @Nullable CommandRequirementDescriptor requirement) {
+        return new Argument(null, argumentName, THE_METHOD_PARAMETER_INDEX_FOR_LITERAL_ARGUMENT, false, requirement);
     }
 
     public boolean isRequiredArgument() {
@@ -43,13 +49,17 @@ public class Argument {
         return this.methodParameterIndex >= 0;
     }
 
+    public boolean isLiteralArgument() {
+        return !this.isRequiredArgument();
+    }
+
     public boolean isRequiredArgumentPlaceholder() {
         return this.argumentName.startsWith(REQUIRED_ARGUMENT_PLACEHOLDER);
     }
 
     private String computeRequirementString() {
         if (this.requirement != null) {
-            return "%d %s".formatted(this.requirement.level(), this.requirement.string())
+            return "%d %s".formatted(this.requirement.getLevel(), this.requirement.getString())
                 .trim();
         }
 
@@ -58,12 +68,15 @@ public class Argument {
 
     @Override
     public String toString() {
+        // command source
+        String commandSourceString = this.isCommandSource ? "@" : "";
+
         /* required argument */
         if (this.isRequiredArgument()) {
             if (isOptional) {
-                return "[%s $%d]{%s}".formatted(this.argumentName, this.methodParameterIndex, this.computeRequirementString());
+                return commandSourceString + "[%s $%d]{%s}".formatted(this.argumentName, this.methodParameterIndex, this.computeRequirementString());
             } else {
-                return "<%s $%d>{%s}".formatted(this.argumentName, this.methodParameterIndex, this.computeRequirementString());
+                return commandSourceString + "<%s $%d>{%s}".formatted(this.argumentName, this.methodParameterIndex, this.computeRequirementString());
             }
         }
 
@@ -79,4 +92,15 @@ public class Argument {
 
         return methodParameterIndex;
     }
+
+    public Argument markAsCommandSource() {
+        if (!this.isRequiredArgument())
+            throw new IllegalArgumentException("The argument for command source must be a required argument.");
+        if (this.getType() == null)
+            throw new IllegalArgumentException("The type of the argument for command source must not null.");
+
+        this.isCommandSource = true;
+        return this;
+    }
+
 }

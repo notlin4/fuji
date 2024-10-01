@@ -5,19 +5,14 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
+import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.module.initializer.command_scheduler.CommandSchedulerInitializer;
 import io.github.sakurawald.module.initializer.command_scheduler.command.argument.wrapper.ScheduleJobName;
 import net.minecraft.server.command.ServerCommandSource;
 
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.util.List;
 
 public class ScheduleJobArgumentTypeAdapter extends BaseArgumentTypeAdapter {
-
-    @Override
-    public boolean match(Type type) {
-        return ScheduleJobName.class.equals(type);
-    }
 
     @Override
     protected ArgumentType<?> makeArgumentType() {
@@ -25,13 +20,23 @@ public class ScheduleJobArgumentTypeAdapter extends BaseArgumentTypeAdapter {
     }
 
     @Override
-    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Parameter parameter) {
-        return new ScheduleJobName(StringArgumentType.getString(context, parameter.getName()));
+    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Argument argument) {
+        return new ScheduleJobName(StringArgumentType.getString(context, argument.getArgumentName()));
     }
 
     @Override
-    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(Parameter parameter) {
-        return super.makeRequiredArgumentBuilder(parameter).suggests((context, builder) -> {
+    public List<Class<?>> getTypeClasses() {
+        return List.of(ScheduleJobName.class);
+    }
+
+    @Override
+    public List<String> getTypeStrings() {
+        return List.of("schedule-job-name");
+    }
+
+    @Override
+    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(String argumentName) {
+        return super.makeRequiredArgumentBuilder(argumentName).suggests((context, builder) -> {
             CommandSchedulerInitializer.getSchedulerHandler().getModel().jobs.forEach(job -> builder.suggest(job.getName()));
             return builder.buildFuture();
         });

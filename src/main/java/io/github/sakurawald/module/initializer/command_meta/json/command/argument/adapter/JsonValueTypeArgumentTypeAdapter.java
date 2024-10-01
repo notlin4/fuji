@@ -5,18 +5,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
+import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.module.initializer.command_meta.json.command.argument.wrapper.JsonValueType;
 import net.minecraft.server.command.ServerCommandSource;
 
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.util.List;
 
 public class JsonValueTypeArgumentTypeAdapter extends BaseArgumentTypeAdapter {
-
-    @Override
-    public boolean match(Type type) {
-        return JsonValueType.class.equals(type);
-    }
 
     @Override
     protected ArgumentType<?> makeArgumentType() {
@@ -24,13 +19,23 @@ public class JsonValueTypeArgumentTypeAdapter extends BaseArgumentTypeAdapter {
     }
 
     @Override
-    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Parameter parameter) {
-        return JsonValueType.valueOf(StringArgumentType.getString(context, parameter.getName()));
+    public Object makeArgumentObject(CommandContext<ServerCommandSource> context, Argument argument) {
+        return JsonValueType.valueOf(StringArgumentType.getString(context, argument.getArgumentName()));
     }
 
     @Override
-    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(Parameter parameter) {
-        return super.makeRequiredArgumentBuilder(parameter).suggests((ctx, builder) -> {
+    public List<Class<?>> getTypeClasses() {
+        return List.of(JsonValueType.class);
+    }
+
+    @Override
+    public List<String> getTypeStrings() {
+        return List.of("json-value-type");
+    }
+
+    @Override
+    public RequiredArgumentBuilder<ServerCommandSource, ?> makeRequiredArgumentBuilder(String argumentName) {
+        return super.makeRequiredArgumentBuilder(argumentName).suggests((ctx, builder) -> {
             for (JsonValueType value : JsonValueType.values()) {
                 builder.suggest(value.name());
             }

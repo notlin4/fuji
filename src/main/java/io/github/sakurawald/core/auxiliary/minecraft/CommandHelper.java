@@ -9,6 +9,7 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -37,6 +38,11 @@ public class CommandHelper {
         return ret;
     }
 
+    public static void updateCommandTree() {
+        CommandManager commandManager = ServerHelper.getDefaultServer().getCommandManager();
+        ServerHelper.getPlayers().forEach(commandManager::sendCommandTree);
+    }
+
     private static void getCommandNodes(List<CommandNode<ServerCommandSource>> list, CommandNode<ServerCommandSource> parent) {
         parent.getChildren().forEach(it->getCommandNodes(list, it));
 
@@ -44,6 +50,13 @@ public class CommandHelper {
         if (!parent.getName().isEmpty()) {
             list.add(parent);
         }
+    }
+
+    public static String buildCommandNodePath(CommandNode<ServerCommandSource> node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.getName());
+        node.getChildren().forEach(child -> sb.append(".").append(buildCommandNodePath(child)));
+        return sb.toString();
     }
 
     @SuppressWarnings("unused")

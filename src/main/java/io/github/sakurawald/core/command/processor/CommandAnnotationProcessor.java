@@ -9,6 +9,7 @@ import io.github.sakurawald.core.command.annotation.CommandSource;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
 import io.github.sakurawald.core.command.argument.structure.Argument;
 import io.github.sakurawald.core.command.structure.CommandDescriptor;
+import io.github.sakurawald.core.command.structure.CommandRequirementDescriptor;
 import io.github.sakurawald.core.event.impl.CommandEvents;
 import io.github.sakurawald.core.manager.Managers;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,17 +57,17 @@ public class CommandAnnotationProcessor {
         Managers.getModuleManager().getModuleRegistry().values()
             .stream()
             .filter(Objects::nonNull)
-            .forEach(initializer -> processClass(initializer.getClass(), initializer));
+            .forEach(initializer -> processClass(initializer.getClass()));
     }
 
-    private static void processClass(Class<?> clazz, Object instance) {
+    private static void processClass(Class<?> clazz) {
         Set<Method> methods = ReflectionUtil.getMethodsWithAnnotation(clazz, CommandNode.class);
         for (Method method : methods) {
-            processMethod(clazz, instance, method);
+            processMethod(clazz, method);
         }
     }
 
-    private static void processMethod(Class<?> clazz, Object instance, Method method) {
+    private static void processMethod(Class<?> clazz, Method method) {
         /* verify */
         if (!method.getReturnType().equals(int.class)) {
             throw new RuntimeException("The method `%s` in class `%s` must return the primitive int data type.".formatted(method.getName(), clazz.getName()));
@@ -76,20 +78,29 @@ public class CommandAnnotationProcessor {
         }
 
         /* make command descriptor */
-        CommandDescriptor descriptor = makeCommandDescriptor(clazz, instance, method);
+        CommandDescriptor descriptor = makeCommandDescriptor(clazz, method);
 
         /* register the command descriptor */
         descriptor.register();
     }
 
-    private static @NotNull CommandDescriptor makeCommandDescriptor(Class<?> clazz, Object instance, Method method) {
+    private static Class<?> unbox(Parameter parameter) {
+        if (parameter.getType().equals(Optional.class)) {
+            ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+            return (Class<?>) parameterizedType.getActualTypeArguments()[0];
+        }
+
+        return parameter.getType();
+    }
+
+    private static @NotNull CommandDescriptor makeCommandDescriptor(Class<?> clazz, Method method) {
         List<Argument> argumentList = new ArrayList<>();
 
         /* process the @CommandNode above the class. */
         CommandNode classAnnotation = clazz.getAnnotation(CommandNode.class);
         CommandRequirement classRequirement = clazz.getAnnotation(CommandRequirement.class);
         if (classAnnotation != null && !classAnnotation.value().isBlank()) {
-            argumentList.add(Argument.makeLiteralArgument(classAnnotation.value().trim(), classRequirement));
+            argumentList.add(Argument.makeLiteralArgument(classAnnotation.value().trim(), CommandRequirementDescriptor.of(classRequirement)));
         }
 
         /* process the @CommandNode above the method. */
@@ -106,10 +117,10 @@ public class CommandAnnotationProcessor {
                 methodRequirement = clazz.getAnnotation(CommandRequirement.class);
             }
 
-            argumentList.add(Argument.makeLiteralArgument(argumentName, methodRequirement));
+            argumentList.add(Argument.makeLiteralArgument(argumentName, CommandRequirementDescriptor.of(methodRequirement)));
         }
 
-        /* get the command requirement */
+        /* process the required arguments */
         boolean hasAnyRequiredArgumentPlaceholder = argumentList.stream().anyMatch(Argument::isRequiredArgumentPlaceholder);
         if (hasAnyRequiredArgumentPlaceholder) {
             /* specify the mappings between argument and parameter manually.  */
@@ -121,21 +132,33 @@ public class CommandAnnotationProcessor {
                 /* replace the required argument placeholder `$1` with the parameter in method whose index is 1*/
                 int methodParameterIndex = argument.getMethodParameterIndex();
                 Parameter parameter = method.getParameters()[methodParameterIndex];
+                Class<?> type = unbox(parameter);
                 boolean isOptional = parameter.getType().equals(Optional.class);
-                argumentList.set(argumentIndex, Argument.makeRequiredArgument(parameter.getName(), methodParameterIndex, isOptional, methodRequirement));
+                argumentList.set(argumentIndex, Argument.makeRequiredArgument(type, parameter.getName(), methodParameterIndex, isOptional, CommandRequirementDescriptor.of(methodRequirement)));
+            }
+            /* generate the command source argument for lazy programmers. */
+            for (int parameterIndex = 0; parameterIndex < method.getParameters().length; parameterIndex++) {
+                Parameter parameter = method.getParameters()[parameterIndex];
+                if (parameter.getAnnotation(CommandSource.class) == null) continue;
+                Class<?> type = unbox(parameter);
+                // for a command source argument, we don't care the index
+                argumentList.addFirst(Argument.makeRequiredArgument(type, parameter.getName(), parameterIndex, false, CommandRequirementDescriptor.of(methodRequirement)).markAsCommandSource());
             }
         } else {
             /* generate the mappings between argument and parameter automatically. */
             Parameter[] parameters = method.getParameters();
             for (int parameterIndex = 0; parameterIndex < parameters.length; parameterIndex++) {
-                Parameter parameter = parameters[parameterIndex];
-
-                /* ignore @CommandSource, since it won't provide value for command argument. */
-                if (parameter.isAnnotationPresent(CommandSource.class)) continue;
-
                 /* append the argument to the tail*/
+                Parameter parameter = parameters[parameterIndex];
+                Class<?> type = unbox(parameter);
                 boolean isOptional = parameter.getType().equals(Optional.class);
-                argumentList.add(Argument.makeRequiredArgument(parameter.getName(), parameterIndex, isOptional, methodRequirement));
+                Argument argument = Argument.makeRequiredArgument(type, parameter.getName(), parameterIndex, isOptional, CommandRequirementDescriptor.of(methodRequirement));
+                argumentList.add(argument);
+
+                /* mark as command source */
+                if (parameter.isAnnotationPresent(CommandSource.class)) {
+                    argument.markAsCommandSource();
+                }
             }
         }
 
@@ -144,7 +167,7 @@ public class CommandAnnotationProcessor {
             throw new RuntimeException("The argument list of @CommandNode annotated in method `%s` in class `%s` is empty.".formatted(method.getName(), clazz.getName()));
         }
 
-        return new CommandDescriptor(instance, method, argumentList);
+        return new CommandDescriptor(method, argumentList);
     }
 
 }

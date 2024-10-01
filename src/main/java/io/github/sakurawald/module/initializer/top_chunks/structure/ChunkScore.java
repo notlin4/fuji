@@ -18,6 +18,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.Heightmap;
 import org.jetbrains.annotations.NotNull;
@@ -122,7 +123,13 @@ public class ChunkScore implements Comparable<ChunkScore> {
                 .withClickEvent(Managers.getCallbackManager().makeCallback((player) -> {
                     if (!hasPermissionToClickToTeleport(player)) return;
 
-                    player.teleport(dimension, chunkPos.getCenterX(), dimension.getTopPosition(Heightmap.Type.MOTION_BLOCKING, player.getBlockPos()).getY(), chunkPos.getCenterZ(), player.getYaw(), player.getPitch());
+                    BlockPos blockPos = new BlockPos(chunkPos.getCenterX(), 128, chunkPos.getCenterZ());
+                    int y = dimension.getTopPosition(Heightmap.Type.MOTION_BLOCKING, blockPos).getY();
+                    // if the chunk is unloaded, the map height will be -64
+                    if (y == -64) {
+                        y = 128;
+                    }
+                    player.teleport(dimension, blockPos.getX(), y, blockPos.getZ(), player.getYaw(), player.getPitch());
                 }, 5, TimeUnit.MINUTES))
             );
     }
