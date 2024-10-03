@@ -212,15 +212,27 @@ public class LocaleHelper {
         // resolve args
         value = resolveArgs(value, args);
 
+        PlaceholderContext placeholderContext = makePlaceholderContext(audience);
+        ParserContext parserContext = ParserContext.of(PlaceholderContext.KEY, placeholderContext);
+
+        return parser.parseText(TextNode.of(value), parserContext);
+    }
+
+    private static @NotNull PlaceholderContext makePlaceholderContext(@Nullable Object audience) {
+        /* extract the player from source */
+        if (audience instanceof ServerCommandSource) {
+            audience = ((ServerCommandSource) audience).getPlayer();
+        }
+
+        /* case type */
         PlaceholderContext placeholderContext;
         if (audience instanceof PlayerEntity playerEntity) {
             placeholderContext = PlaceholderContext.of(playerEntity);
         } else {
             placeholderContext = PlaceholderContext.of(ServerHelper.getDefaultServer());
         }
-        ParserContext parserContext = ParserContext.of(PlaceholderContext.KEY, placeholderContext);
 
-        return parser.parseText(TextNode.of(value), parserContext);
+        return placeholderContext;
     }
 
     private static @NotNull Text getText(@Nullable Object audience, boolean isKey, String keyOrValue, Object... args) {
@@ -231,12 +243,12 @@ public class LocaleHelper {
         return getText(audience, true, key, args);
     }
 
-    public static String getKeywordValue(@Nullable Object audience, String keyword){
+    public static String getKeywordValue(@Nullable Object audience, String keyword) {
         return getValue(audience, "keyword." + keyword);
     }
 
     public static MutableText getTextWithKeyword(@Nullable Object audience, String key, String keyword) {
-        String replacement = getKeywordValue(audience,keyword);
+        String replacement = getKeywordValue(audience, keyword);
         return Text.literal(getValue(audience, key, replacement));
     }
 

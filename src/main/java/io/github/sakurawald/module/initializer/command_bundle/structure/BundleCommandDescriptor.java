@@ -8,9 +8,10 @@ import io.github.sakurawald.core.auxiliary.LogUtil;
 import io.github.sakurawald.core.auxiliary.minecraft.LocaleHelper;
 import io.github.sakurawald.core.command.argument.adapter.abst.BaseArgumentTypeAdapter;
 import io.github.sakurawald.core.command.argument.structure.Argument;
+import io.github.sakurawald.core.command.executor.CommandExecutor;
 import io.github.sakurawald.core.command.structure.CommandDescriptor;
 import io.github.sakurawald.core.command.structure.CommandRequirementDescriptor;
-import io.github.sakurawald.core.service.command_executor.CommandExecutor;
+import io.github.sakurawald.core.command.structure.ExtendedCommandSource;
 import io.github.sakurawald.module.initializer.command_bundle.accessor.CommandContextAccessor;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -104,11 +105,12 @@ public class BundleCommandDescriptor extends CommandDescriptor {
         }).toList();
 
         /* substitute the placeholders */
-        commands = commands.stream().map(command -> LocaleHelper.resolvePlaceholder(ctx.getSource().getPlayer(), command)).toList();
+        ServerCommandSource source = ctx.getSource();
+        commands = commands.stream().map(command -> LocaleHelper.resolvePlaceholder(source, command)).toList();
 
         /* execute the commands */
         LogUtil.debug("execute bundle command: {}", commands);
-        CommandExecutor.executeSpecializedCommand(ctx.getSource().getPlayer(), commands);
+        CommandExecutor.execute(ExtendedCommandSource.asConsole(source), commands);
 
         return 1;
     }

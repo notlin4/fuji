@@ -48,6 +48,7 @@ public class ConfigModel {
         public Language language = new Language();
         public Chat chat = new Chat();
         public Placeholder placeholder = new Placeholder();
+        public Predicate predicate = new Predicate();
         public MOTD motd = new MOTD();
         public Nametag nametag = new Nametag();
         public TabList tab_list = new TabList();
@@ -205,6 +206,7 @@ public class ConfigModel {
             public SendTitle send_title = new SendTitle();
             public SendToast send_toast = new SendToast();
             public SendChat send_chat = new SendChat();
+            public SendBossbar send_bossbar = new SendBossbar();
 
             public static class SendMessage {
                 public boolean enable = true;
@@ -229,6 +231,10 @@ public class ConfigModel {
             public static class SendChat {
                 public boolean enable = true;
             }
+
+            public static class SendBossbar {
+                public boolean enable = true;
+            }
         }
 
         public static class View {
@@ -236,6 +242,10 @@ public class ConfigModel {
         }
 
         public static class Placeholder {
+            public boolean enable = false;
+        }
+
+        public static class Predicate {
             public boolean enable = false;
         }
 

@@ -13,10 +13,11 @@ import io.github.sakurawald.core.command.annotation.CommandRequirement;
 import io.github.sakurawald.core.command.annotation.CommandSource;
 import io.github.sakurawald.core.command.argument.wrapper.impl.GreedyString;
 import io.github.sakurawald.core.command.exception.AbortCommandExecutionException;
+import io.github.sakurawald.core.command.executor.CommandExecutor;
+import io.github.sakurawald.core.command.structure.ExtendedCommandSource;
 import io.github.sakurawald.core.config.handler.abst.BaseConfigurationHandler;
 import io.github.sakurawald.core.event.impl.ServerLifecycleEvents;
 import io.github.sakurawald.core.manager.Managers;
-import io.github.sakurawald.core.service.command_executor.CommandExecutor;
 import io.github.sakurawald.module.initializer.ModuleInitializer;
 import io.github.sakurawald.module.initializer.command_attachment.command.argument.wrapper.ExecuteAsType;
 import io.github.sakurawald.module.initializer.command_attachment.command.argument.wrapper.InteractType;
@@ -32,6 +33,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -123,10 +125,11 @@ public class CommandAttachmentInitializer extends ModuleInitializer {
 
             /* execute as */
             ExecuteAsType executeAsType = e.getExecuteAsType();
+            ServerCommandSource source = player.getCommandSource();
             switch (executeAsType) {
-                case CONSOLE -> CommandExecutor.executeCommandAsConsole(player, e.getCommand());
-                case PLAYER -> CommandExecutor.executeCommandAsPlayer(player, e.getCommand());
-                case FAKE_OP -> CommandExecutor.executeCommandAsFakeOp(player, e.getCommand());
+                case CONSOLE -> CommandExecutor.execute(ExtendedCommandSource.asConsole(source), e.getCommand());
+                case PLAYER -> CommandExecutor.execute(ExtendedCommandSource.asPlayer(source, player), e.getCommand());
+                case FAKE_OP -> CommandExecutor.execute(ExtendedCommandSource.asFakeOp(source,player), e.getCommand());
             }
 
             /* item destroy */

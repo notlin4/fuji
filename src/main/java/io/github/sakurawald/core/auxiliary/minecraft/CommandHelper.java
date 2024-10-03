@@ -12,6 +12,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +25,7 @@ import java.util.function.Function;
 public class CommandHelper {
 
     public static final String UUID = "uuid";
+    public static final int EXCEPTION_COLOR = 16736000;
 
     public static @NotNull String computeCommandNodePath(CommandNode<ServerCommandSource> node) {
         CommandDispatcher<ServerCommandSource> dispatcher = ServerHelper.getCommandDispatcher();
@@ -34,7 +36,7 @@ public class CommandHelper {
     public static List<CommandNode<ServerCommandSource>> getCommandNodes() {
         List<CommandNode<ServerCommandSource>> ret = new ArrayList<>();
         RootCommandNode<ServerCommandSource> root = ServerHelper.getCommandDispatcher().getRoot();
-        getCommandNodes(ret,root);
+        getCommandNodes(ret, root);
         return ret;
     }
 
@@ -44,7 +46,7 @@ public class CommandHelper {
     }
 
     private static void getCommandNodes(List<CommandNode<ServerCommandSource>> list, CommandNode<ServerCommandSource> parent) {
-        parent.getChildren().forEach(it->getCommandNodes(list, it));
+        parent.getChildren().forEach(it -> getCommandNodes(list, it));
 
         // ignore the root command node
         if (!parent.getName().isEmpty()) {
@@ -52,18 +54,20 @@ public class CommandHelper {
         }
     }
 
-    public static String buildCommandNodePath(CommandNode<ServerCommandSource> node) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.getName());
-        node.getChildren().forEach(child -> sb.append(".").append(buildCommandNodePath(child)));
-        return sb.toString();
-    }
-
     @SuppressWarnings("unused")
     public static class Return {
         public static final int FAIL = -1;
         public static final int PASS = 0;
         public static final int SUCCESS = 1;
+
+        public static int fromBoolean(boolean value) {
+            return value ? SUCCESS : FAIL;
+        }
+
+        public static int outputBoolean(ServerCommandSource source, boolean value) {
+            source.sendMessage(Text.literal(String.valueOf(value)));
+            return fromBoolean(value);
+        }
     }
 
     public static class Suggestion {
@@ -76,6 +80,16 @@ public class CommandHelper {
                 return builder.buildFuture();
             };
         }
+
+        public static <T> @NotNull SuggestionProvider<ServerCommandSource> enums(T[] enums) {
+            return (context, builder) -> {
+                for (T value : enums) {
+                    builder.suggest(value.toString());
+                }
+                return builder.buildFuture();
+            };
+        }
+
     }
 
     public static class Pattern {

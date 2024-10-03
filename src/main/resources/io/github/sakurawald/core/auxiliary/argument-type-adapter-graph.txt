@@ -1,6 +1,8 @@
 io.github.sakurawald.core.command.argument.adapter.impl.BlockPosArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.BlockStateArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.BooleanArgumentTypeAdapter
+io.github.sakurawald.core.command.argument.adapter.impl.BossBarColorArgumentTypeAdapter
+io.github.sakurawald.core.command.argument.adapter.impl.BossBarStyleArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.ColorArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.ColumnPosArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.CommandContextArgumentTypeAdapter
@@ -34,8 +36,11 @@ io.github.sakurawald.core.command.argument.adapter.impl.RotationArgumentTypeAdap
 io.github.sakurawald.core.command.argument.adapter.impl.ScoreboardCriterionArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.ScoreboardObjectiveArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.ScoreboardSlotArgumentTypeAdapter
+io.github.sakurawald.core.command.argument.adapter.impl.ServerCommandSourceAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.SlotRangeArgumentTypeAdapter
+io.github.sakurawald.core.command.argument.adapter.impl.StepTypeArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.StringArgumentTypeAdapter
+io.github.sakurawald.core.command.argument.adapter.impl.StringListArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.StyleArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.TeamArgumentTypeAdapter
 io.github.sakurawald.core.command.argument.adapter.impl.TextArgumentTypeAdapter

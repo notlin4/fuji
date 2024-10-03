@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
  * - The treatment of RequiredArgument is the same as the LiteralArgument, except the GreedyStringArgument.
  * - The GreedyStringArgument should always be the last parameter written in the method.
  * - An optional argument is a RequiredArgument.
+ * - The parameter names in a method annotated with @CommandNode is a part of the command path, be careful to refactor these parameter names.
  */
 @Getter
 public class Argument {
@@ -82,6 +83,18 @@ public class Argument {
 
         /* literal argument */
         return "%s{%s}".formatted(this.argumentName, this.computeRequirementString());
+    }
+
+    public String toInGameString() {
+        if (this.isLiteralArgument()) {
+            return this.argumentName;
+        }
+
+        if (isOptional) {
+            return "[%s %s]".formatted(this.argumentName, this.getType().getSimpleName());
+        } else {
+            return "<%s %s>".formatted(this.argumentName, this.getType().getSimpleName());
+        }
     }
 
     private int tryParseMethodParameterIndexFromArgumentName() {

@@ -54,6 +54,7 @@ io.github.sakurawald.module.initializer.command_toolbox.warp.WarpInitializer
 io.github.sakurawald.module.initializer.command_warmup.CommandWarmupInitializer
 io.github.sakurawald.module.initializer.deathlog.DeathLogInitializer
 io.github.sakurawald.module.initializer.echo.send_actionbar.SendActionbar
+io.github.sakurawald.module.initializer.echo.send_bossbar.SendBossbarInitializer
 io.github.sakurawald.module.initializer.echo.send_broadcast.SendBroadcastInitializer
 io.github.sakurawald.module.initializer.echo.send_chat.SendChatInitializer
 io.github.sakurawald.module.initializer.echo.send_message.SendMessageInitializer
@@ -79,6 +80,7 @@ io.github.sakurawald.module.initializer.language.LanguageInitializer
 io.github.sakurawald.module.initializer.motd.MotdInitializer
 io.github.sakurawald.module.initializer.nametag.NametagInitializer
 io.github.sakurawald.module.initializer.placeholder.PlaceholderInitializer
+io.github.sakurawald.module.initializer.predicate.PredicateInitializer
 io.github.sakurawald.module.initializer.profiler.ProfilerInitializer
 io.github.sakurawald.module.initializer.pvp.PvpInitializer
 io.github.sakurawald.module.initializer.rtp.RtpInitializer
